@@ -78,6 +78,9 @@ curl http://localhost:8000/health
 
 # 4. Nạp dữ liệu mẫu lần đầu
 python scripts/seed_data.py
+
+# 5. Chạy demo end-to-end
+python scripts/demo_flow.py --skip-seed
 ```
 
 ### Gọi thử API đầu tiên
@@ -312,6 +315,23 @@ pytest tests/unit/ -v --cov=app --cov-report=term-missing
 # Integration tests (cần docker compose up trước)
 docker compose up -d qdrant neo4j
 pytest tests/integration/ -v
+
+# Test bằng Docker, không phụ thuộc virtualenv local
+docker compose up -d --build
+docker compose exec -T api pytest -q
+```
+
+## 📈 Đánh giá retrieval
+
+```bash
+# Seed dữ liệu trước khi đánh giá
+python scripts/seed_data.py --path app
+
+# Đo Recall@5 và MRR
+python scripts/evaluate_retrieval.py --path tests/fixtures/eval_queries.json --threshold 0.35
+
+# Demo flow đầy đủ: health, seed, sample query, evaluation
+python scripts/demo_flow.py
 ```
 
 ---
