@@ -29,7 +29,13 @@ class LocalEmbeddingProvider(EmbeddingProvider):
 
     def _load_model(self):
         if self._model is None:
-            from sentence_transformers import SentenceTransformer
+            try:
+                from sentence_transformers import SentenceTransformer
+            except ImportError as exc:
+                raise RuntimeError(
+                    "Local embeddings require the optional 'sentence-transformers' package. "
+                    "Install it or set EMBEDDING_PROVIDER=openai."
+                ) from exc
 
             self._model = SentenceTransformer(self.model_name)
         return self._model

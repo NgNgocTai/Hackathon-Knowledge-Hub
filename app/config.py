@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     api_key: str = Field(default="dev-secret-key", alias="API_KEY")
-    embedding_provider: str = Field(default="local", alias="EMBEDDING_PROVIDER")
+    embedding_provider: str = Field(default="openai", alias="EMBEDDING_PROVIDER")
     openai_api_key: str | None = Field(default=None, alias="OPENAI_API_KEY")
     qdrant_url: str = Field(default="http://qdrant:6333", alias="QDRANT_URL")
     neo4j_uri: str = Field(default="bolt://neo4j:7687", alias="NEO4J_URI")
