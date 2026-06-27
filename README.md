@@ -105,8 +105,9 @@ Tạo file `.env` từ `.env.example`:
 | Biến | Mặc định | Mô tả |
 |------|---------|-------|
 | `API_KEY` | `dev-secret-key` | API key (comma-separated cho nhiều key) |
-| `EMBEDDING_PROVIDER` | `local` | `local` (all-MiniLM-L6-v2) hoặc `openai` |
+| `EMBEDDING_PROVIDER` | `openai` | `openai` mặc định; `local` chỉ dùng khi cài thêm `sentence-transformers` |
 | `OPENAI_API_KEY` | _(trống)_ | Bắt buộc nếu `EMBEDDING_PROVIDER=openai` |
+| `OPENAI_EMBEDDING_MODEL` | `text-embedding-3-small` | Model embedding OpenAI; chọn `text-embedding-3-small` để tiết kiệm chi phí |
 | `QDRANT_URL` | `http://qdrant:6333` | Qdrant Vector DB URL |
 | `NEO4J_URI` | `bolt://neo4j:7687` | Neo4j bolt URI |
 | `NEO4J_USER` | `neo4j` | Neo4j username |
@@ -247,8 +248,8 @@ knowledge-hub/
 | API Framework | FastAPI | Async, Pydantic validation, auto OpenAPI docs |
 | Vector DB | Qdrant | Docker single-node nhẹ, payload filter tốt cho sync |
 | Graph DB | Neo4j Community | Cypher support, multi-hop traversal, community lớn |
-| Embedding (default) | `all-MiniLM-L6-v2` | Local, không cần API key, 80MB, đủ tốt cho MVP |
-| Embedding (opt-in) | OpenAI `text-embedding-3-small` | Chất lượng cao hơn khi có API key |
+| Embedding (default) | OpenAI `text-embedding-3-small` | Rẻ, nhẹ, chất lượng đủ tốt cho MVP |
+| Embedding (optional) | `all-MiniLM-L6-v2` | Chỉ dùng nếu cài thêm `sentence-transformers` và bật `EMBEDDING_PROVIDER=local` |
 | Code Parser (Python) | `ast` (stdlib) | Built-in, ổn định |
 | Code Parser (Java/C#) | `tree-sitter` | Universal parser, nhiều ngôn ngữ |
 | Doc Parser | `markdown-it-py`, `pypdf` | |
