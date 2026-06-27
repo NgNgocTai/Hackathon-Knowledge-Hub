@@ -48,6 +48,17 @@ def test_chunk_entity_over_limit_splits_with_overlap():
     assert "token350" in chunks[1].content
 
 
+def test_chunk_entity_over_limit_preserves_code_formatting():
+    content = "\n".join(["def run():", *[f"    value_{index} = {index}" for index in range(260)]])
+    entity = ParsedEntity("function", "run", "run", "app/sample.py", 1, 261, content, None, "python")
+
+    chunks = Chunker().chunk(_ir(entity), version="dev")
+
+    assert len(chunks) > 1
+    assert chunks[0].content.startswith("def run():\n    value_0 = 0")
+    assert "\n    value_" in chunks[1].content
+
+
 def test_chunk_indexer_embeds_and_upserts_chunks():
     class FakeEmbedder:
         def embed(self, texts):

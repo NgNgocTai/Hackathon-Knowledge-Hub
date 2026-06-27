@@ -28,13 +28,13 @@ class Chunker:
                 chunks.append(self._build_chunk(ir, entity, entity.content, version))
                 continue
 
-            windows = self._sliding_windows(tokens)
-            for index, window_tokens in enumerate(windows):
+            windows = self._sliding_windows(entity.content)
+            for index, window_content in enumerate(windows):
                 chunks.append(
                     self._build_chunk(
                         ir=ir,
                         entity=entity,
-                        content=" ".join(window_tokens),
+                        content=window_content,
                         version=version,
                         chunk_index=index,
                         total_chunks=len(windows),
@@ -85,7 +85,57 @@ class Chunker:
             and len(self._tokens(entity.content)) < self.MIN_ENTITY_TOKENS
         )
 
-    def _sliding_windows(self, tokens: list[str]) -> list[list[str]]:
+    def _sliding_windows(self, content: str) -> list[str]:
+        lines = content.splitlines()
+        if not lines:
+            return []
+
+        windows: list[str] = []
+        current_lines: list[str] = []
+        current_token_count = 0
+        overlap_lines: list[str] = []
+
+        for line in lines:
+            line_tokens = self._tokens(line)
+            if len(line_tokens) > self.WINDOW_SIZE:
+                if current_lines:
+                    windows.append("\n".join(current_lines))
+                    overlap_lines = self._tail_lines_for_overlap(current_lines)
+                    current_lines = []
+                    current_token_count = 0
+                token_windows = self._token_sliding_windows(line_tokens)
+                windows.extend(" ".join(window) for window in token_windows)
+                overlap_lines = []
+                continue
+
+            if current_lines and current_token_count + len(line_tokens) > self.WINDOW_SIZE:
+                windows.append("\n".join(current_lines))
+                overlap_lines = self._tail_lines_for_overlap(current_lines)
+                current_lines = [*overlap_lines, line]
+                current_token_count = sum(len(self._tokens(item)) for item in current_lines)
+                continue
+
+            current_lines.append(line)
+            current_token_count += len(line_tokens)
+
+        if current_lines:
+            windows.append("\n".join(current_lines))
+        return windows
+
+    def _tail_lines_for_overlap(self, lines: list[str]) -> list[str]:
+        overlap: list[str] = []
+        token_count = 0
+        for line in reversed(lines):
+            line_token_count = len(self._tokens(line))
+            if overlap and token_count + line_token_count > self.OVERLAP_SIZE:
+                break
+            overlap.insert(0, line)
+            token_count += line_token_count
+            if token_count >= self.OVERLAP_SIZE:
+                break
+        return overlap
+
+    def _token_sliding_windows(self, tokens: list[str]) -> list[list[str]]:
         if not tokens:
             return []
         windows: list[list[str]] = []

@@ -50,7 +50,8 @@ class Neo4jGraphStore(GraphStore):
         query = (
             f"MATCH path = (n)-[r:{rel_clause}*1..{max_hops}]->(m) "
             "WHERE n.qualified_name IN $entity_names OR n.name IN $entity_names "
-            "RETURN labels(m)[0] AS label, properties(m) AS properties, length(path) AS hop "
+            "RETURN labels(m)[0] AS label, properties(m) AS properties, "
+            "length(path) AS hop, type(last(relationships(path))) AS relationship "
             "ORDER BY hop ASC "
             "LIMIT $max_nodes"
         )
@@ -58,7 +59,14 @@ class Neo4jGraphStore(GraphStore):
             with self.driver.session() as session:
                 records = session.run(query, entity_names=entity_names, max_nodes=max_nodes)
                 return [
-                    GraphNode(record["label"], {**record["properties"], "hop": record["hop"]})
+                    GraphNode(
+                        record["label"],
+                        {
+                            **record["properties"],
+                            "hop": record["hop"],
+                            "relationship": record["relationship"],
+                        },
+                    )
                     for record in records
                 ]
         except Exception as exc:
