@@ -20,6 +20,19 @@ services:
       neo4j:
         condition: service_healthy
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: /api
+        VITE_API_KEY: ${API_KEY:-dev-secret-key}
+    container_name: knowledge-hub-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+
   qdrant:
     image: qdrant/qdrant:v1.12.5
     container_name: knowledge-hub-qdrant

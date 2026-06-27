@@ -81,6 +81,9 @@ python scripts/seed_data.py
 
 # 5. Chạy demo end-to-end
 python scripts/demo_flow.py --skip-seed
+
+# 6. Mở demo UI
+# http://localhost:3000
 ```
 
 ### Gọi thử API đầu tiên
@@ -333,6 +336,22 @@ python scripts/evaluate_retrieval.py --path tests/fixtures/eval_queries.json --t
 # Demo flow đầy đủ: health, seed, sample query, evaluation
 python scripts/demo_flow.py
 ```
+
+## 🖥️ Frontend Demo UI
+
+```bash
+docker compose up -d --build
+```
+
+Mở `http://localhost:3000` để dùng giao diện chatbot:
+
+- hỏi codebase bằng ngôn ngữ tự nhiên
+- xem tool card `hybrid_retrieval` với Input/Output
+- xem bảng top results gồm file, entity, score, line range và graph context
+- click một result để mở drawer xem full code chunk
+- bấm `Ingest` để nạp lại source path như `app`
+
+Frontend chỉ dùng `API_KEY` để gọi backend. `OPENAI_API_KEY` vẫn nằm trong backend `.env`, không được đưa lên browser.
 
 ---
 
