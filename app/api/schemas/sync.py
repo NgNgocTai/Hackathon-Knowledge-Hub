@@ -13,3 +13,11 @@ class SyncResponse(BaseModel):
     job_id: str
     status: str
     message: str
+
+
+class SyncStatusResponse(BaseModel):
+    job_id: str
+    status: str
+    scope: str
+    path: str | None = None
+    error: str | None = None

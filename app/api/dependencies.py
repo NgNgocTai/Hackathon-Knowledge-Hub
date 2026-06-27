@@ -8,6 +8,7 @@ from app.parser.registry import ParserRegistry
 from app.retrieval.retriever import HybridRetriever
 from app.storage.neo4j_store import Neo4jGraphStore
 from app.storage.qdrant_store import QdrantVectorStore
+from app.sync.syncer import SyncEvictionService
 
 
 def get_app_settings() -> Settings:
@@ -46,3 +47,13 @@ def get_graph_indexer() -> GraphIndexer:
 
 def get_retriever() -> HybridRetriever:
     return HybridRetriever(get_vector_store(), get_graph_store(), get_embedding_provider())
+
+
+def get_sync_service() -> SyncEvictionService:
+    return SyncEvictionService(
+        get_parser_registry(),
+        get_chunk_indexer(),
+        get_graph_indexer(),
+        get_vector_store(),
+        get_graph_store(),
+    )

@@ -24,9 +24,21 @@ class IngestJob:
     finished_at: datetime | None = None
 
 
+@dataclass
+class SyncJob:
+    job_id: str
+    status: JobStatus
+    scope: str
+    path: str | None = None
+    error: str | None = None
+    started_at: datetime | None = None
+    finished_at: datetime | None = None
+
+
 class JobRegistry:
     def __init__(self):
         self._jobs: dict[str, IngestJob] = {}
+        self._sync_jobs: dict[str, SyncJob] = {}
         self._queue: asyncio.Queue[str] = asyncio.Queue()
 
     def submit(self, files: list[str]) -> IngestJob:
@@ -37,6 +49,19 @@ class JobRegistry:
 
     def get(self, job_id: str) -> IngestJob | None:
         return self._jobs.get(job_id)
+
+    def submit_sync(self, scope: str, path: str | None = None) -> SyncJob:
+        job = SyncJob(job_id=str(uuid.uuid4()), status="queued", scope=scope, path=path)
+        self._sync_jobs[job.job_id] = job
+        return job
+
+    def get_sync(self, job_id: str) -> SyncJob | None:
+        return self._sync_jobs.get(job_id)
+
+    def update_sync(self, job_id: str, **kwargs) -> None:
+        job = self._sync_jobs[job_id]
+        for key, value in kwargs.items():
+            setattr(job, key, value)
 
     def update(self, job_id: str, **kwargs) -> None:
         job = self._jobs[job_id]
