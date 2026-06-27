@@ -1,0 +1,32 @@
+[
+  {
+    "id": "ingest_pipeline",
+    "query": "How does the ingest pipeline work?",
+    "expected_entities": ["ingest_path", "IngestJobService._process_job", "ChunkIndexer.index"],
+    "expected_files": ["app/api/routers/ingest.py", "app/api/services/ingest.py", "app/embedding/indexer.py"]
+  },
+  {
+    "id": "sync_delete_chunks",
+    "query": "Where does sync_file delete chunks from vector store?",
+    "expected_entities": ["SyncEvictionService.sync_file", "VectorStore.delete_by_file"],
+    "expected_files": ["app/sync/syncer.py", "app/storage/interfaces.py"]
+  },
+  {
+    "id": "parser_entities",
+    "query": "Where does the Python parser extract classes and functions?",
+    "expected_entities": ["PythonParser.parse", "PythonParser._class_entity", "PythonParser._function_entity"],
+    "expected_files": ["app/parser/python_parser.py"]
+  },
+  {
+    "id": "qdrant_search",
+    "query": "How does Qdrant search filter chunks?",
+    "expected_entities": ["QdrantVectorStore.search", "QdrantVectorStore._build_filter"],
+    "expected_files": ["app/storage/qdrant_store.py"]
+  },
+  {
+    "id": "health_check",
+    "query": "How does the health endpoint check Qdrant and Neo4j?",
+    "expected_entities": ["health_check", "QdrantVectorStore.health_check", "Neo4jGraphStore.health_check"],
+    "expected_files": ["app/api/routers/health.py", "app/storage/qdrant_store.py", "app/storage/neo4j_store.py"]
+  }
+]
