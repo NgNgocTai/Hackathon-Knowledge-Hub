@@ -59,6 +59,24 @@ def test_chunk_entity_over_limit_preserves_code_formatting():
     assert "\n    value_" in chunks[1].content
 
 
+def test_chunker_skips_python_file_level_chunk():
+    entity = ParsedEntity(
+        "file",
+        "sample.py",
+        "app/sample.py",
+        "app/sample.py",
+        1,
+        2,
+        "def run():\n    return helper()",
+        None,
+        "python",
+    )
+
+    chunks = Chunker().chunk(_ir(entity), version="dev")
+
+    assert chunks == []
+
+
 def test_chunk_indexer_embeds_and_upserts_chunks():
     class FakeEmbedder:
         def embed(self, texts):

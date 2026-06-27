@@ -18,6 +18,8 @@ class Chunker:
         for entity in ir.entities:
             if entity.entity_type == "commit":
                 continue
+            if entity.entity_type == "file" and entity.language == "python":
+                continue
             if not entity.content.strip():
                 continue
             if self._should_skip_tiny_function(entity):
