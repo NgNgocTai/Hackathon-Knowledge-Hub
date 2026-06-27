@@ -51,6 +51,8 @@ class OpenAIEmbeddingProvider(EmbeddingProvider):
         return [item.embedding for item in response.data]
 
     def dimension(self) -> int:
+        if self.model == "text-embedding-3-large":
+            return 3072
         return 1536
 
 

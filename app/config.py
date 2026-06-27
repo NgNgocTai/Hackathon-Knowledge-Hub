@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     api_key: str = Field(default="dev-secret-key", alias="API_KEY")
     embedding_provider: str = Field(default="openai", alias="EMBEDDING_PROVIDER")
     openai_api_key: str | None = Field(default=None, alias="OPENAI_API_KEY")
+    openai_embedding_model: str = Field(default="text-embedding-3-small", alias="OPENAI_EMBEDDING_MODEL")
     qdrant_url: str = Field(default="http://qdrant:6333", alias="QDRANT_URL")
     neo4j_uri: str = Field(default="bolt://neo4j:7687", alias="NEO4J_URI")
     neo4j_user: str = Field(default="neo4j", alias="NEO4J_USER")
