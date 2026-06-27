@@ -16,13 +16,18 @@ def main() -> int:
     parser.add_argument("--api-url", default=os.getenv("KNOWLEDGE_HUB_URL", DEFAULT_API_URL))
     parser.add_argument("--api-key", default=os.getenv("API_KEY", DEFAULT_API_KEY))
     parser.add_argument("--top-k", type=int, default=5)
+    parser.add_argument("--threshold", type=float, default=0.5, help="Minimum vector similarity threshold.")
     parser.add_argument("--no-graph", action="store_true", help="Disable graph expansion for comparison.")
     args = parser.parse_args()
 
     payload = {
         "query": args.query,
         "top_k": args.top_k,
-        "options": {"enable_graph_expansion": not args.no_graph, "max_hops": 2},
+        "options": {
+            "enable_graph_expansion": not args.no_graph,
+            "max_hops": 2,
+            "similarity_threshold": args.threshold,
+        },
     }
     try:
         response = httpx.post(

@@ -135,16 +135,26 @@ class HybridRetriever:
 
     def _graph_context_map(self, graph_nodes: list[GraphNode]) -> dict[str, list[dict]]:
         context: dict[str, list[dict]] = {}
+        seen: set[tuple[str, str | None, str | None, int]] = set()
         for node in graph_nodes:
             chunk_id = node.properties.get("chunk_id")
             if not chunk_id:
                 continue
+            item = (
+                node.properties.get("qualified_name") or node.properties.get("name"),
+                node.properties.get("file_path") or node.properties.get("source_file"),
+                node.properties.get("relationship"),
+                node.properties.get("hop", 1),
+            )
+            if (chunk_id, *item) in seen:
+                continue
+            seen.add((chunk_id, *item))
             context.setdefault(chunk_id, []).append(
                 {
-                    "entity": node.properties.get("qualified_name") or node.properties.get("name"),
-                    "file": node.properties.get("file_path") or node.properties.get("source_file"),
-                    "relationship": node.properties.get("relationship"),
-                    "hop": node.properties.get("hop", 1),
+                    "entity": item[0],
+                    "file": item[1],
+                    "relationship": item[2],
+                    "hop": item[3],
                 }
             )
         return context

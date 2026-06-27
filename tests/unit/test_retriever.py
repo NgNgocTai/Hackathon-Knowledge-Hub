@@ -112,6 +112,43 @@ def test_retriever_validates_query():
         retriever.query("", top_k=5)
 
 
+def test_retriever_deduplicates_graph_context():
+    retriever = HybridRetriever(FakeVectorStore(), FakeGraphStore(), FakeEmbedder())
+    nodes = [
+        GraphNode(
+            "Function",
+            {
+                "qualified_name": "get_current_user",
+                "file_path": "app/services/auth.py",
+                "chunk_id": "graph-1",
+                "hop": 1,
+                "relationship": "CALLS",
+            },
+        ),
+        GraphNode(
+            "Function",
+            {
+                "qualified_name": "get_current_user",
+                "file_path": "app/services/auth.py",
+                "chunk_id": "graph-1",
+                "hop": 1,
+                "relationship": "CALLS",
+            },
+        ),
+    ]
+
+    context = retriever._graph_context_map(nodes)
+
+    assert context["graph-1"] == [
+        {
+            "entity": "get_current_user",
+            "file": "app/services/auth.py",
+            "relationship": "CALLS",
+            "hop": 1,
+        }
+    ]
+
+
 def test_context_builder_sorts_and_trims():
     from app.api.context_builder import ContextBuilder
 

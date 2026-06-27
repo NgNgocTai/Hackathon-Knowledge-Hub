@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 class QueryOptionsSchema(BaseModel):
     enable_graph_expansion: bool = True
     max_hops: int = Field(default=2, ge=1, le=2)
+    similarity_threshold: float = Field(default=0.5, ge=0.0, le=1.0)
     filters: dict[str, list[str]] = Field(default_factory=dict)
 
 

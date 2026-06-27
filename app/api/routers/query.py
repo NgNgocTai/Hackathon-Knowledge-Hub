@@ -14,6 +14,7 @@ def query_context(request: QueryRequest, retriever: HybridRetriever = Depends(ge
     options = RetrievalOptions(
         enable_graph_expansion=request.options.enable_graph_expansion,
         max_hops=request.options.max_hops,
+        similarity_threshold=request.options.similarity_threshold,
         chunk_type_filter=request.options.filters.get("chunk_type"),
         language_filter=request.options.filters.get("language"),
     )
