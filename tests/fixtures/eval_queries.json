@@ -2,31 +2,154 @@
   {
     "id": "ingest_pipeline",
     "query": "Where is the ingest route implemented?",
-    "expected_entities": ["ingest_path", "IngestJobService._process_job", "ChunkIndexer.index"],
-    "expected_files": ["app/api/routers/ingest.py", "app/api/services/ingest.py", "app/embedding/indexer.py"]
+    "expected_entities": [
+      "ingest_path",
+      "IngestJobService._process_job",
+      "ChunkIndexer.index"
+    ],
+    "expected_files": [
+      "app/api/routers/ingest.py",
+      "app/api/services/ingest.py",
+      "app/embedding/indexer.py"
+    ]
   },
   {
     "id": "sync_delete_chunks",
     "query": "Where does sync_file delete chunks from vector store?",
-    "expected_entities": ["SyncEvictionService.sync_file", "VectorStore.delete_by_file"],
-    "expected_files": ["app/sync/syncer.py", "app/storage/interfaces.py"]
+    "expected_entities": [
+      "SyncEvictionService.sync_file",
+      "VectorStore.delete_by_file"
+    ],
+    "expected_files": [
+      "app/sync/syncer.py",
+      "app/storage/interfaces.py"
+    ]
   },
   {
     "id": "parser_entities",
     "query": "Where does the Python parser extract classes and functions?",
-    "expected_entities": ["PythonParser.parse", "PythonParser._class_entity", "PythonParser._function_entity"],
-    "expected_files": ["app/parser/python_parser.py"]
+    "expected_entities": [
+      "PythonParser.parse",
+      "PythonParser._class_entity",
+      "PythonParser._function_entity"
+    ],
+    "expected_files": [
+      "app/parser/python_parser.py"
+    ]
   },
   {
     "id": "qdrant_search",
     "query": "How does Qdrant search filter chunks?",
-    "expected_entities": ["QdrantVectorStore.search", "QdrantVectorStore._build_filter"],
-    "expected_files": ["app/storage/qdrant_store.py"]
+    "expected_entities": [
+      "QdrantVectorStore.search",
+      "QdrantVectorStore._build_filter"
+    ],
+    "expected_files": [
+      "app/storage/qdrant_store.py"
+    ]
   },
   {
     "id": "health_check",
     "query": "How does the health endpoint check Qdrant and Neo4j?",
-    "expected_entities": ["health_check", "QdrantVectorStore.health_check", "Neo4jGraphStore.health_check"],
-    "expected_files": ["app/api/routers/health.py", "app/storage/qdrant_store.py", "app/storage/neo4j_store.py"]
+    "expected_entities": [
+      "health_check",
+      "QdrantVectorStore.health_check",
+      "Neo4jGraphStore.health_check"
+    ],
+    "expected_files": [
+      "app/api/routers/health.py",
+      "app/storage/qdrant_store.py",
+      "app/storage/neo4j_store.py"
+    ]
+  },
+  {
+    "id": "score_fusion",
+    "query": "How does hybrid retrieval score fusion work?",
+    "expected_entities": ["HybridRetriever._score_fusion", "HybridRetriever.query"],
+    "expected_files": ["app/retrieval/retriever.py"]
+  },
+  {
+    "id": "graph_extraction",
+    "query": "What entities does the graph extractor create?",
+    "expected_entities": ["EntityExtractor.extract", "EntityExtractor._node_from_entity"],
+    "expected_files": ["app/graph/extractor.py"]
+  },
+  {
+    "id": "context_builder",
+    "query": "How does the ContextBuilder sort and trim retrieved results?",
+    "expected_entities": ["ContextBuilder.build"],
+    "expected_files": ["app/api/context_builder.py"]
+  },
+  {
+    "id": "file_watcher",
+    "query": "Where is the file watcher started?",
+    "expected_entities": ["SourceWatcher.start", "SourceWatcher._handle_event"],
+    "expected_files": ["app/sync/watcher.py"]
+  },
+  {
+    "id": "chunk_indexer",
+    "query": "How are chunks embedded and upserted?",
+    "expected_entities": ["ChunkIndexer.index"],
+    "expected_files": ["app/embedding/indexer.py"]
+  },
+  {
+    "id": "openai_embedder",
+    "query": "Where does OpenAI embedding get called?",
+    "expected_entities": ["OpenAIEmbeddingProvider.embed"],
+    "expected_files": ["app/embedding/embedder.py"]
+  },
+  {
+    "id": "markdown_parser",
+    "query": "How are Markdown headings parsed into documentation sections?",
+    "expected_entities": ["MarkdownParser.parse", "MarkdownParser._heading_sections"],
+    "expected_files": ["app/parser/markdown_parser.py"]
+  },
+  {
+    "id": "pdf_parser",
+    "query": "Where is PDFParser implemented?",
+    "expected_entities": ["PDFParser", "PDFParser.parse"],
+    "expected_files": ["app/parser/pdf_parser.py"]
+  },
+  {
+    "id": "git_parser",
+    "query": "Where is GitLogParser implemented?",
+    "expected_entities": ["GitLogParser", "GitLogParser.parse"],
+    "expected_files": ["app/parser/git_parser.py"]
+  },
+  {
+    "id": "neo4j_expand",
+    "query": "How does Neo4j expand graph nodes by relationship type?",
+    "expected_entities": ["Neo4jGraphStore.expand"],
+    "expected_files": ["app/storage/neo4j_store.py"]
+  },
+  {
+    "id": "qdrant_delete",
+    "query": "Where does Qdrant delete chunks by source file?",
+    "expected_entities": ["QdrantVectorStore.delete_by_file"],
+    "expected_files": ["app/storage/qdrant_store.py"]
+  },
+  {
+    "id": "auth_middleware",
+    "query": "How does API key authentication work?",
+    "expected_entities": ["APIKeyAuthMiddleware.dispatch"],
+    "expected_files": ["app/api/middleware/auth.py"]
+  },
+  {
+    "id": "query_endpoint",
+    "query": "Where is query_context implemented?",
+    "expected_entities": ["query_context"],
+    "expected_files": ["app/api/routers/query.py"]
+  },
+  {
+    "id": "sync_endpoint",
+    "query": "Where is the sync endpoint implemented?",
+    "expected_entities": ["trigger_sync"],
+    "expected_files": ["app/api/routers/sync.py"]
+  },
+  {
+    "id": "parser_registry",
+    "query": "How does the parser registry choose a parser for a file?",
+    "expected_entities": ["ParserRegistry.get_parser"],
+    "expected_files": ["app/parser/registry.py"]
   }
 ]

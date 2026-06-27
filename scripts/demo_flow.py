@@ -12,12 +12,12 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 from scripts.evaluate_retrieval import (
     DEFAULT_EVAL_PATH,
     EvalCase,
-    evaluate_results,
     load_cases,
     mean_reciprocal_rank,
     print_report,
     query_api,
     recall_at_k,
+    run_cases,
 )
 
 
@@ -83,11 +83,7 @@ def run_sample_queries(api_url: str, api_key: str, queries: list[str], top_k: in
 
 
 def run_eval(api_url: str, api_key: str, cases: list[EvalCase], top_k: int, threshold: float) -> None:
-    responses = {
-        case.id: query_api(api_url, api_key, case.query, top_k, threshold, enable_graph=True)
-        for case in cases
-    }
-    outcomes = evaluate_results(cases, responses)
+    outcomes = run_cases(cases, api_url, api_key, top_k, threshold, enable_graph=True)
     print_report(outcomes, top_k)
     print(f"demo_eval_pass={recall_at_k(outcomes) >= 0.8 and mean_reciprocal_rank(outcomes) >= 0.5}")
 

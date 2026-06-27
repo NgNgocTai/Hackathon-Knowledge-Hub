@@ -2,6 +2,7 @@ import argparse
 import json
 import os
 import sys
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -29,6 +30,7 @@ class EvalOutcome:
     hit_rank: int | None
     top_entities: list[str]
     top_files: list[str]
+    latency_ms: float = 0.0
 
     @property
     def hit(self) -> bool:
@@ -66,7 +68,12 @@ def find_hit_rank(results: list[dict[str, Any]], expected_entities: list[str], e
     return None
 
 
-def evaluate_results(cases: list[EvalCase], responses: dict[str, list[dict[str, Any]]]) -> list[EvalOutcome]:
+def evaluate_results(
+    cases: list[EvalCase],
+    responses: dict[str, list[dict[str, Any]]],
+    latencies: dict[str, float] | None = None,
+) -> list[EvalOutcome]:
+    latencies = latencies or {}
     outcomes: list[EvalOutcome] = []
     for case in cases:
         results = responses.get(case.id, [])
@@ -78,6 +85,7 @@ def evaluate_results(cases: list[EvalCase], responses: dict[str, list[dict[str, 
                 hit_rank=hit_rank,
                 top_entities=[result.get("metadata", {}).get("entity_name", "") for result in results],
                 top_files=[result.get("metadata", {}).get("source_file", "") for result in results],
+                latency_ms=latencies.get(case.id, 0.0),
             )
         )
     return outcomes
@@ -122,17 +130,56 @@ def query_api(
     return response.json().get("results", [])
 
 
-def print_report(outcomes: list[EvalOutcome], top_k: int) -> None:
+def percentile(values: list[float], percent: float) -> float:
+    if not values:
+        return 0.0
+    ordered = sorted(values)
+    index = min(len(ordered) - 1, max(0, int(round((len(ordered) - 1) * percent))))
+    return ordered[index]
+
+
+def run_cases(
+    cases: list[EvalCase],
+    api_url: str,
+    api_key: str,
+    top_k: int,
+    threshold: float,
+    enable_graph: bool,
+) -> list[EvalOutcome]:
+    responses: dict[str, list[dict[str, Any]]] = {}
+    latencies: dict[str, float] = {}
+    for case in cases:
+        started = time.perf_counter()
+        responses[case.id] = query_api(
+            api_url=api_url,
+            api_key=api_key,
+            query=case.query,
+            top_k=top_k,
+            threshold=threshold,
+            enable_graph=enable_graph,
+        )
+        latencies[case.id] = (time.perf_counter() - started) * 1000
+    return evaluate_results(cases, responses, latencies)
+
+
+def print_report(outcomes: list[EvalOutcome], top_k: int, label: str = "Graph ON") -> None:
     recall = recall_at_k(outcomes)
     mrr = mean_reciprocal_rank(outcomes)
+    latencies = [outcome.latency_ms for outcome in outcomes if outcome.latency_ms > 0]
+    print(f"Mode: {label}")
     print(f"Recall@{top_k}: {recall:.3f}")
     print(f"MRR: {mrr:.3f}")
+    print(f"Latency P50: {percentile(latencies, 0.50):.0f} ms")
+    print(f"Latency P95: {percentile(latencies, 0.95):.0f} ms")
     print()
     for outcome in outcomes:
         rank = "-" if outcome.hit_rank is None else str(outcome.hit_rank)
         first_entity = outcome.top_entities[0] if outcome.top_entities else "-"
         first_file = outcome.top_files[0] if outcome.top_files else "-"
-        print(f"{outcome.id}: hit_rank={rank} top_entity={first_entity} top_file={first_file}")
+        print(
+            f"{outcome.id}: hit_rank={rank} latency_ms={outcome.latency_ms:.0f} "
+            f"top_entity={first_entity} top_file={first_file}"
+        )
 
 
 def main() -> int:
@@ -145,22 +192,32 @@ def main() -> int:
     parser.add_argument("--min-recall", type=float, default=0.8)
     parser.add_argument("--min-mrr", type=float, default=0.5)
     parser.add_argument("--no-graph", action="store_true")
+    parser.add_argument("--ablation", action="store_true", help="Also run a vector-only comparison.")
     args = parser.parse_args()
 
     cases = load_cases(args.path)
-    responses = {
-        case.id: query_api(
+    outcomes = run_cases(
+        cases=cases,
+        api_url=args.api_url,
+        api_key=args.api_key,
+        top_k=args.top_k,
+        threshold=args.threshold,
+        enable_graph=not args.no_graph,
+    )
+    print_report(outcomes, args.top_k, label="Graph OFF" if args.no_graph else "Graph ON")
+
+    if args.ablation and not args.no_graph:
+        print()
+        print("-" * 80)
+        vector_only = run_cases(
+            cases=cases,
             api_url=args.api_url,
             api_key=args.api_key,
-            query=case.query,
             top_k=args.top_k,
             threshold=args.threshold,
-            enable_graph=not args.no_graph,
+            enable_graph=False,
         )
-        for case in cases
-    }
-    outcomes = evaluate_results(cases, responses)
-    print_report(outcomes, args.top_k)
+        print_report(vector_only, args.top_k, label="Graph OFF")
 
     recall = recall_at_k(outcomes)
     mrr = mean_reciprocal_rank(outcomes)
