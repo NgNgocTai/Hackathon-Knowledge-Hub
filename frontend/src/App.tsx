@@ -52,7 +52,7 @@ import { health, ingestStatus, queryCodebase, startIngest } from "./api";
 import type { ChatMessage, HealthResponse, IngestStatus, QueryOptions, QueryResult, ToolCall } from "./types";
 
 const DEMO_QUERIES = [
-  "How does the ingest pipeline work?",
+  "Where is the ingest route implemented?",
   "Where does sync_file delete chunks from vector store?",
   "Where does the Python parser extract classes and functions?",
   "How does Qdrant search filter chunks?",
@@ -81,6 +81,27 @@ function buildSummary(results: QueryResult[]): string {
   return `Found ${results.length} relevant code segments. Top match is ${top.metadata.entity_name ?? "unknown"} in ${
     top.metadata.source_file ?? "unknown file"
   }.`;
+}
+
+function compactToolOutput(response: {
+  total_results: number;
+  retrieval_method: string;
+  results: QueryResult[];
+}): Record<string, unknown> {
+  return {
+    total_results: response.total_results,
+    retrieval_method: response.retrieval_method,
+    top_results: response.results.map((result, index) => ({
+      rank: index + 1,
+      entity: result.metadata.entity_name,
+      file: result.metadata.source_file,
+      score: Number(result.relevance_score.toFixed(3)),
+      lines:
+        result.metadata.line_start && result.metadata.line_end
+          ? `${result.metadata.line_start}-${result.metadata.line_end}`
+          : "-",
+    })),
+  };
 }
 
 function HealthStatusBadge() {
@@ -569,7 +590,7 @@ export default function App() {
         name: "hybrid_retrieval",
         status: "SUCCESS",
         input: { query: queryText, top_k: topK, ...options },
-        output: { total_results: response.total_results, retrieval_method: response.retrieval_method, results: response.results },
+        output: compactToolOutput(response),
       };
       const assistantMessage: ChatMessage = {
         id: loadingMessage.id,

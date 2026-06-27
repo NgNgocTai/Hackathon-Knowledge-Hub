@@ -24,7 +24,7 @@ from scripts.evaluate_retrieval import (
 DEFAULT_API_URL = "http://localhost:8000"
 DEFAULT_API_KEY = "dev-secret-key"
 DEFAULT_QUERIES = [
-    "How does the ingest pipeline work?",
+    "Where is the ingest route implemented?",
     "Where does sync_file delete chunks from vector store?",
     "Where does the Python parser extract classes and functions?",
 ]

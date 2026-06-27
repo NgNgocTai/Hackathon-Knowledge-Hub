@@ -12,7 +12,7 @@ DEFAULT_API_KEY = "dev-secret-key"
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run a demo query against Knowledge Hub.")
-    parser.add_argument("query", nargs="?", default="How does the ingest pipeline work?")
+    parser.add_argument("query", nargs="?", default="Where is the ingest route implemented?")
     parser.add_argument("--api-url", default=os.getenv("KNOWLEDGE_HUB_URL", DEFAULT_API_URL))
     parser.add_argument("--api-key", default=os.getenv("API_KEY", DEFAULT_API_KEY))
     parser.add_argument("--top-k", type=int, default=5)

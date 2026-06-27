@@ -1,7 +1,7 @@
 [
   {
     "id": "ingest_pipeline",
-    "query": "How does the ingest pipeline work?",
+    "query": "Where is the ingest route implemented?",
     "expected_entities": ["ingest_path", "IngestJobService._process_job", "ChunkIndexer.index"],
     "expected_files": ["app/api/routers/ingest.py", "app/api/services/ingest.py", "app/embedding/indexer.py"]
   },
