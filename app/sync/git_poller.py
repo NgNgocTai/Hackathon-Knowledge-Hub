@@ -2,8 +2,6 @@ import asyncio
 from collections.abc import Callable
 from datetime import UTC, datetime
 
-from git import Repo
-
 from app.sync.models import SyncEventType
 
 
@@ -15,6 +13,8 @@ class GitPoller:
         self._running = False
 
     async def start_polling(self, callback: Callable[[str, SyncEventType], None]) -> None:
+        from git import Repo
+
         self._running = True
         repo = Repo(self.repo_path)
         while self._running:

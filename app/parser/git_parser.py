@@ -1,7 +1,5 @@
 from pathlib import Path
 
-from git import Repo
-
 from app.parser.base import BaseParser
 from app.parser.exceptions import ParseError
 from app.parser.models import IntermediateRepresentation, ParsedEntity, ParsedRelationship
@@ -19,6 +17,8 @@ class GitLogParser(BaseParser):
             raise FileNotFoundError(file_path)
 
         try:
+            from git import Repo
+
             repo = Repo(repo_path)
             commits = list(repo.iter_commits(max_count=100))
         except Exception as exc:
