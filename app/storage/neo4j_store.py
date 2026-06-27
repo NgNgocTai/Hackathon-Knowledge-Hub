@@ -137,7 +137,7 @@ class Neo4jGraphStore(GraphStore):
 
     @staticmethod
     def _merge_node_tx(tx, label: str, key: str, value: str, properties: dict) -> None:
-        query = f"MERGE (n:{label} {{{key}: $value}}) SET n += $properties"
+        query = f"MERGE (n {{{key}: $value}}) SET n:{label} SET n += $properties"
         tx.run(query, value=value, properties=properties)
 
     @staticmethod

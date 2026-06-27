@@ -43,7 +43,7 @@ class HybridRetriever:
             except Exception as exc:
                 logger.warning("Graph expansion failed; falling back to vector-only retrieval: %s", exc)
 
-        fused = self._score_fusion(vector_results, graph_nodes, options)
+        fused = self._score_fusion(query_text, vector_results, graph_nodes, options)
         return fused[:top_k]
 
     def _embed_query(self, query_text: str) -> list[float]:
@@ -80,6 +80,7 @@ class HybridRetriever:
 
     def _score_fusion(
         self,
+        query_text: str,
         vector_results: list[SearchResult],
         graph_nodes: list[GraphNode],
         options: RetrievalOptions,
@@ -102,6 +103,7 @@ class HybridRetriever:
             vector_score = vector_result.score if vector_result else 0.0
             graph_score = graph_score_map.get(chunk_id, 0.0)
             final_score = options.vector_weight * vector_score + options.graph_weight * graph_score
+            final_score = min(1.0, final_score + self._lexical_boost(query_text, chunk))
             results.append(
                 RetrievalResult(
                     chunk_id=chunk_id,
@@ -116,6 +118,16 @@ class HybridRetriever:
 
         results.sort(key=lambda result: result.relevance_score, reverse=True)
         return results
+
+    def _lexical_boost(self, query_text: str, chunk: Chunk) -> float:
+        normalized_query = query_text.lower().replace("-", "_")
+        entity_name = chunk.entity_name.lower()
+        short_name = entity_name.rsplit(".", 1)[-1]
+        if short_name and short_name in normalized_query:
+            return 0.25
+        if entity_name and entity_name in normalized_query:
+            return 0.25
+        return 0.0
 
     def _fetch_graph_chunks(self, chunk_ids: list[str]) -> list[Chunk]:
         if not chunk_ids:
@@ -135,7 +147,7 @@ class HybridRetriever:
 
     def _graph_context_map(self, graph_nodes: list[GraphNode]) -> dict[str, list[dict]]:
         context: dict[str, list[dict]] = {}
-        seen: set[tuple[str, str | None, str | None, int]] = set()
+        seen: set[tuple[str, str | None, str | None, str | None, int]] = set()
         for node in graph_nodes:
             chunk_id = node.properties.get("chunk_id")
             if not chunk_id:

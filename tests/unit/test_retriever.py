@@ -79,6 +79,25 @@ def test_hybrid_retriever_fuses_vector_and_graph_results():
     assert results[1].graph_context[0]["entity"] == "get_current_user"
 
 
+def test_retriever_boosts_exact_entity_name_mentions():
+    retriever = HybridRetriever(FakeVectorStore(), FakeGraphStore(), FakeEmbedder())
+    chunk = Chunk(
+        "chunk-1",
+        "async def sync_file(): pass",
+        "SyncEvictionService.sync_file",
+        "code_function",
+        "app/sync/syncer.py",
+        "sha256:test",
+        1,
+        1,
+        "python",
+        "dev",
+    )
+
+    assert retriever._lexical_boost("Where does sync_file delete chunks?", chunk) == 0.25
+    assert retriever._lexical_boost("Where does sync delete chunks?", chunk) == 0.0
+
+
 def test_retriever_filters_below_similarity_threshold():
     class LowScoreVectorStore(FakeVectorStore):
         def search(self, query_vector, top_k, filters=None, score_threshold=0.5):
